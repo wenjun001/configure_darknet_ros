@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(darknet_ros)
 
 # Set c++11 cmake flags
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11  ${CMAKE_CXX_FLAGS}")
 
 # Define path of darknet folder here.
 find_path(DARKNET_PATH
@@ -12,21 +12,20 @@ message("Darknet path dir = ${DARKNET_PATH}")
 add_definitions(-DDARKNET_FILE_PATH="${DARKNET_PATH}")
 
 # Find CUDA
-FIND_PACKAGE(CUDA)
+#FIND_PACKAGE(CUDA)
 if (CUDA_FOUND)
   find_package(CUDA REQUIRED)
   message(STATUS "CUDA Version: ${CUDA_VERSION_STRINGS}")
   message(STATUS "CUDA Libararies: ${CUDA_LIBRARIES}")
   set(
     CUDA_NVCC_FLAGS
-    ${CUDA_NVCC_FLAGS};
+    ${CUDA_NVCC_FLAGS} -D_FORCE_INLINES;
     -O3
     -gencode arch=compute_30,code=sm_30
     -gencode arch=compute_35,code=sm_35
     -gencode arch=compute_50,code=[sm_50,compute_50]
     -gencode arch=compute_52,code=[sm_52,compute_52]
-    -gencode arch=compute_61,code=sm_61
-    -gencode arch=compute_62,code=sm_62
+
   )
   add_definitions(-DGPU)
 else()

@@ -1,7 +1,7 @@
 subscribers:
 
   camera_reading:
-    topic: /camera/rgb/image_raw
+    topic: /webcam/image_raw
     queue_size: 1
 
 actions:
@@ -9,12 +9,19 @@ actions:
   camera_reading:
     name: /darknet_ros/check_for_objects
 
+
 publishers:
 
   object_detector:
     topic: /darknet_ros/found_object
     queue_size: 1
     latch: false
+
+
+  single_object_detector:
+    topic: /darknet_ros/object_detect/result
+    name: keyboard
+
 
   bounding_boxes:
     topic: /darknet_ros/bounding_boxes

@@ -8,6 +8,7 @@
 
 // yolo object detector
 #include "darknet_ros/YoloObjectDetector.hpp"
+#include "std_msgs/String.h"
 
 // Check for xServer
 #include <X11/Xlib.h>
@@ -130,6 +131,11 @@ void YoloObjectDetector::init()
   std::string cameraTopicName;
   int cameraQueueSize;
   std::string objectDetectorTopicName;
+
+  std::string singleobjectDetectorTopicName;
+
+
+
   int objectDetectorQueueSize;
   bool objectDetectorLatch;
   std::string boundingBoxesTopicName;
@@ -144,6 +150,13 @@ void YoloObjectDetector::init()
   nodeHandle_.param("subscribers/camera_reading/queue_size", cameraQueueSize, 1);
   nodeHandle_.param("publishers/object_detector/topic", objectDetectorTopicName,
                     std::string("found_object"));
+
+  nodeHandle_.param("publishers/single_object_detector/topic", singleobjectDetectorTopicName,
+                    std::string("/darknet_ros/object_detect/result"));
+
+  nodeHandle_.param("publishers/single_object_detector/name", singleobjectName,
+                    std::string("person"));
+
   nodeHandle_.param("publishers/object_detector/queue_size", objectDetectorQueueSize, 1);
   nodeHandle_.param("publishers/object_detector/latch", objectDetectorLatch, false);
   nodeHandle_.param("publishers/bounding_boxes/topic", boundingBoxesTopicName,
@@ -165,6 +178,10 @@ void YoloObjectDetector::init()
   detectionImagePublisher_ = nodeHandle_.advertise<sensor_msgs::Image>(detectionImageTopicName,
                                                                        detectionImageQueueSize,
                                                                        detectionImageLatch);
+
+
+  objectDectResult = nodeHandle_.advertise<std_msgs::String>(singleobjectDetectorTopicName, 1000);
+
 
   // Action servers.
   std::string checkForObjectsActionName;
@@ -582,6 +599,12 @@ void *YoloObjectDetector::publishInThread()
     msg.data = num;
     objectPublisher_.publish(msg);
 
+    std_msgs::String objectDetectRes;
+
+    std::stringstream result;
+
+
+    bool  isFound = false;
     for (int i = 0; i < numClasses_; i++) {
       if (rosBoxCounter_[i] > 0) {
         darknet_ros_msgs::BoundingBox boundingBox;
@@ -599,6 +622,8 @@ void *YoloObjectDetector::publishInThread()
           boundingBox.xmax = xmax;
           boundingBox.ymax = ymax;
           boundingBoxesResults_.bounding_boxes.push_back(boundingBox);
+          if(classLabels_[i].compare(singleobjectName)==0)
+            isFound = true;
         }
       }
     }
@@ -606,6 +631,15 @@ void *YoloObjectDetector::publishInThread()
     boundingBoxesResults_.header.frame_id = "detection";
     boundingBoxesResults_.image_header = imageHeader_;
     boundingBoxesPublisher_.publish(boundingBoxesResults_);
+    if(isFound){
+      result << singleobjectName << ":FOUND";
+
+    }else{
+      result << singleobjectName << ":NO_FOUND";
+
+    }
+    objectDetectRes.data = result.str();
+    objectDectResult.publish(objectDetectRes);
   } else {
     std_msgs::Int8 msg;
     msg.data = 0;
