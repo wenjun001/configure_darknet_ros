@@ -11,7 +11,11 @@ darknet_ros/config/ros.yaml
 
 
 single_object_detector:
+
+
     topic: /darknet_ros/object_detect/result
+    
+    
     name: keyboard
 
 
