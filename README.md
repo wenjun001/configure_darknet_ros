@@ -1,3 +1,22 @@
+
+## This project from darknet_ros
+
+For project need I add configure to detect the object we wanted. 
+
+
+
+Configure as follow:
+
+darknet_ros/config/ros.yaml
+
+
+single_object_detector:
+    topic: /darknet_ros/object_detect/result
+    name: keyboard
+
+
+
+
 # YOLO v2 for ROS: Real-Time Object Detection for ROS
 
 ## Overview
